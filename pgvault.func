@@ -30,6 +30,7 @@ initial() {
   capacity=$(df -h /opt/appdata/plexguide | tail -n +2 | awk '{print $2}')
   # Percentage
   percentage=$(df -h /opt/appdata/plexguide | tail -n +2 | awk '{print $5}')
+  
 }
 
 initial2() {
@@ -38,6 +39,7 @@ initial2() {
   program_size=$(cat /var/plexguide/rclone.size)
   program_var=$(cat /tmp/program_var)
   server_id=$(cat /var/plexguide/server.id)
+  vfs_bind=$(cat /var/plexguide/vfs_bind)
 }
 
 final() {
@@ -325,13 +327,13 @@ EOF
 
 EOF
 
-  rclone --config /opt/appdata/plexguide/rclone.conf mkdir gdrive:/plexguide/backup/${server_id} 1>/dev/null 2>&1
+  rclone --config /opt/appdata/plexguide/rclone.conf mkdir gdrive:/plexguide/backup/${server_id} --bind="$vfs_bind" 1>/dev/null 2>&1
 
   rclone --config /opt/appdata/plexguide/rclone.conf \
     --stats-one-line --stats 1s --progress \
     moveto ${tarlocation}/${program_var}.tar \
     gdrive:/plexguide/backup/${server_id}/${program_var}.tar \
-    -v --checksum --drive-chunk-size=64M --transfers=8 --bind=144.76.13.56
+    -v --checksum --drive-chunk-size=64M --transfers=8 --bind="$vfs_bind"
 
   ##### Remove File Incase
   #rm -rf ${tarlocation}/${program_var}.tar 1>/dev/null 2>&1
@@ -412,6 +414,7 @@ EOF
 
   rclone --config /opt/appdata/plexguide/rclone.conf --stats-one-line \
     --stats 1s --progress \
+    --bind="$vfs_bind"
     copy gdrive:/plexguide/backup/${srecall}/${program_var}.tar \
     ${tarlocation} \
     -v --checksum --drive-chunk-size=64M --transfers=8
