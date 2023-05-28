@@ -35,6 +35,7 @@ initial() {
 
 initial2() {
   path=$(cat /var/plexguide/server.hd.path)
+  tmplocation='/tmp'
   tarlocation=$(cat /var/plexguide/data.location)
   program_size=$(cat /var/plexguide/rclone.size)
   program_var=$(cat /tmp/program_var)
@@ -411,14 +412,19 @@ EOF
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 EOF
-
-  rclone --config /opt/appdata/plexguide/rclone.conf --stats-one-line \
-    --stats 1s --progress \
-    --bind="$vfs_bind"
-    copy gdrive:/plexguide/backup/${srecall}/${program_var}.tar \
-    ${tarlocation} \
-    -v --checksum --drive-chunk-size=64M --transfers=8
-
+  tmp_program_var="${tmplocation}/${program_var}.tar"
+  if [ -f "$tmp_program_var" ]; then
+    # Copy the file to tarlocation
+    cp "$tmp_program_var" "$tarlocation"
+    echo "Copied $program_var to $tarlocation"
+  else
+    rclone --config /opt/appdata/plexguide/rclone.conf --stats-one-line \
+      --stats 1s --progress \
+      --bind="$vfs_bind" \
+      copy "gdrive:/plexguide/backup/${srecall}/${program_var}.tar" \
+      "$tarlocation" \
+      -v --checksum --drive-chunk-size=64M --transfers=8
+  fi
   ##### Stop Docker Container if Running
   runningcheck
   if [ "$running" == "1" ]; then
