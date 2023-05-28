@@ -413,6 +413,7 @@ EOF
 
 EOF
   tmp_program_var="${tmplocation}/${program_var}.tar"
+  echo "$tmp_program_var"
   if [ -f "$tmp_program_var" ]; then
     # Copy the file to tarlocation
     cp "$tmp_program_var" "$tarlocation"
